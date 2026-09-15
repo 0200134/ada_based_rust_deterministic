@@ -1,0 +1,164 @@
+# THIS FILE IS GENERATED. DO NOT EDIT.
+
+[solution]
+[solution.context]
+solved = true
+[[solution.state]]
+crate = "gnat"
+fulfilment = "solved"
+pinned = false
+transitivity = "indirect"
+versions = ">=16"
+[solution.state.release]
+auto-gpr-with = false
+description = "The GNAT Ada compiler - Native"
+licenses = "GPL-3.0-or-later AND GPL-3.0-or-later WITH GCC-exception-3.1"
+maintainers = [
+"Fabien Chouteau <chouteau@adacore.com>",
+"CÃ©sar Sagaert <sagaert@adacore.com>",
+]
+maintainers-logins = [
+"Fabien-Chouteau",
+"AldanTanneo",
+]
+name = "gnat_native"
+provides = [
+"gnat=16.1.0",
+]
+version = "16.1.0"
+website = "https://github.com/alire-project/GNAT-FSF-builds"
+[solution.state.release.configuration]
+auto_gpr_with = true
+disabled = true
+generate_ada = true
+generate_c = true
+generate_gpr = true
+output_dir = "config"
+[solution.state.release.environment]
+[solution.state.release.environment.LD_LIBRARY_PATH]
+prepend = "${CRATE_ROOT}/lib"
+[solution.state.release.environment.LD_RUN_PATH]
+prepend = "${CRATE_ROOT}/lib"
+[solution.state.release.environment.PATH]
+prepend = "${CRATE_ROOT}/bin"
+[solution.state.release.origin]
+binary = true
+hashes = [
+"sha256:657cf254323eb91f79768918e8bd8887d6da7ac6056732a38f21e2848267da18",
+]
+url = "https://github.com/alire-project/GNAT-FSF-builds/releases/download/gnat-16.1.0-1/gnat-aarch64-darwin-16.1.0-1.tar.gz"
+[[solution.state]]
+crate = "gnatprove"
+fulfilment = "solved"
+pinned = false
+transitivity = "direct"
+versions = "16.1.0"
+[solution.state.release]
+authors = [
+"AdaCore",
+]
+auto-gpr-with = false
+description = "Automatic formal verification of SPARK code"
+licenses = "GPL-3.0-or-later"
+long-description = "GNATprove, which provides automatic formal verification of SPARK code, is based on the [open-source](https://github.com/AdaCore/spark2014) [SPARK Pro](https://www.adacore.com/sparkpro) by [AdaCore](https://www.adacore.com).\nThe [SPARK Pro User's Guide](https://docs.adacore.com/spark2014-docs/html/ug/index.html) provides extensive documentation on how to use GNATprove.\nNote that because this version of GNATprove is built from an intermediate commit of SPARK Pro, it is not representative of any specific SPARK Pro release, and the SPARK Pro documentation may describe features or capabilities that are not yet available in this version of GNATprove.\n\nTo use GNATprove, simply add it to your Alire project using\n\n    alr with gnatprove\n\nYou will then be able to run GNATprove:\n\n    alr gnatprove\n\nFor more details on getting started using GNATprove, see [Getting Started with SPARK](https://docs.adacore.com/spark2014-docs/html/ug/en/getting_started.html) from the [SPARK Pro User's Guide](https://docs.adacore.com/spark2014-docs/html/ug/index.html).\n\nTo get started with the SPARK language, see the [Introduction to SPARK](https://learn.adacore.com/courses/intro-to-spark/index.html) course on [learn.adacore.com](https://learn.adacore.com/index.html).\n"
+maintainers = [
+"Fabien Chouteau <chouteau@adacore.com>",
+"CÃ©sar Sagaert <sagaert@adacore.com>",
+]
+maintainers-logins = [
+"Fabien-Chouteau",
+"AldanTanneo",
+]
+name = "gnatprove"
+version = "16.1.0"
+website = "https://docs.adacore.com/spark2014-docs/html/ug/index.html"
+[solution.state.release.configuration]
+auto_gpr_with = true
+disabled = true
+generate_ada = true
+generate_c = true
+generate_gpr = true
+output_dir = "config"
+[solution.state.release.environment]
+[solution.state.release.environment.PATH]
+prepend = "${CRATE_ROOT}/bin"
+[solution.state.release.origin]
+binary = true
+hashes = [
+"sha256:24772f112dd7a0baf40333e9142922b30ccdd19b8f70441eac8006b78cdfd90d",
+]
+url = "https://github.com/alire-project/GNAT-FSF-builds/releases/download/gnatprove-16.1.0-1/gnatprove-aarch64-darwin-16.1.0-1.tar.gz"
+[[solution.state]]
+crate = "sparklib"
+fulfilment = "solved"
+pinned = false
+transitivity = "direct"
+versions = "16.1.0"
+[solution.state.release]
+authors = [
+"AdaCore",
+]
+description = "Companion libraries for SPARK programming"
+licenses = "Apache-2.0 WITH LLVM-exception"
+long-description = "SPARKlib is meant to provide users of SPARK libraries to use in SPARK code. SPARKlib contains various libraries, such as a wide range of containers, as well as lemmas to use directly in user code.\n\nThis version of SPARKlib is made for use with [GNATprove FSF 16](https://github.com/alire-project/GNAT-FSF-builds/releases/tag/gnatprove-16.1.0-1). Unlike what is specified in the AdaCore SPARK User's guide, you do not need to copy the sources to your project to use it - and in fact, it's not recommended when developing with Alire. This crate is usable as-is without special manipulations.\n\nThe SPARKlib is configurable through GPR external definitions:\n- `SPARKLIB_MODE` can be configured to `light` or `full`, defaults to `full`.\n- `SPARKLIB_BUILD` can be configured to `Production`, `Assertions` or `Debug`, defaults to `Production`.\n\nYou can set these with the `[gpr-set-externals]` section in your Alire manifest. Only set them as an end user of the crate (that is, when testing locally, or when developing a binary).\n"
+maintainers = [
+"chouteau@adacore.com",
+"sagaert@adacore.com",
+]
+maintainers-logins = [
+"Fabien-Chouteau",
+"AldanTanneo",
+]
+name = "sparklib"
+project-files = [
+"sparklib.gpr",
+]
+version = "16.1.0"
+website = "https://github.com/AdaCore/SPARKlib"
+[solution.state.release.configuration]
+auto_gpr_with = true
+disabled = true
+generate_ada = true
+generate_c = true
+generate_gpr = true
+output_dir = "config"
+[solution.state.release.gpr-externals]
+SPARKLIB_BUILD = [
+"Production",
+"Assertions",
+"Debug",
+]
+SPARKLIB_MODE = [
+"light",
+"full",
+]
+[solution.state.release.gpr-set-externals]
+SPARKLIB_INSTALLED = "False"
+[solution.state.release.origin]
+commit = "6d13c7145fa5e4cac6eb6d1ffe78f9a2bccbed7f"
+url = "git+https://github.com/AdaCore/SPARKlib"
+[[solution.state.release.actions]]
+command = [
+"sed",
+"-i",
+"-e",
+"s/type SPARKlib_Library_Kind is (\"static\");/type SPARKlib_Library_Kind is (\"static\", \"static-pic\", \"relocatable\");/",
+"sparklib.gpr",
+]
+directory = "."
+type = "post-fetch"
+[[solution.state.release.actions]]
+command = [
+"sed",
+"-i",
+"-e",
+"s/\"-gnatygo-u\"/\"-gnatygo-ud\"/",
+"sparklib_common.gpr",
+]
+directory = "."
+type = "post-fetch"
+[[solution.state.release.depends-on]]
+gnat = ">=16"
+[[solution.state.release.forbids]]
+gnatprove = "<16"
+

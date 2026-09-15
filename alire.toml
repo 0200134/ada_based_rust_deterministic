@@ -1,0 +1,9 @@
+name = "ada_based_rust_spark"
+version = "0.1.0"
+description = "Ada/SPARK verification boundary for Ada-based Rust"
+
+[[depends-on]]
+gnatprove = "16.1.0"
+
+[[depends-on]]
+sparklib = "16.1.0"

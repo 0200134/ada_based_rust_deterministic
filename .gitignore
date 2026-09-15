@@ -1,0 +1,7 @@
+/target/
+/src/target/
+/spark/obj/
+/spark/bin/
+/proofs/coq/*.vo
+/proofs/coq/*.glob
+/proofs/isabelle/.bash_completion

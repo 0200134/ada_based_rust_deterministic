@@ -1,0 +1,3 @@
+session Ada_Based_Rust = HOL +
+  options [document = false]
+  theories Backend

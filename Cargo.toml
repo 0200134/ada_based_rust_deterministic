@@ -1,0 +1,31 @@
+[package]
+name = "ada-based-rust"
+version = "0.1.0"
+edition = "2021"
+default-run = "ada-based-rust"
+description = "Deterministic Rust runtime with an Ada/SPARK contract boundary"
+license = "MIT"
+readme = "README"
+keywords = ["compiler", "deterministic", "spark", "llvm", "backend"]
+categories = ["compilers", "development-tools"]
+exclude = [
+	"/target/",
+	"/spark/obj/",
+	"/spark/bin/",
+]
+
+[profile.dev]
+panic = "abort"
+
+[profile.release]
+panic = "abort"
+lto = true
+codegen-units = 1
+
+[lints.rust]
+unsafe_code = "forbid"
+
+[lints.clippy]
+unwrap_used = "deny"
+expect_used = "deny"
+panic = "deny"

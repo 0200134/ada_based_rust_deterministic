@@ -1,5 +1,200 @@
-Ada-based-rust is the rust, that is based on the ada programming language. Its compiler is fully based on Ada-Spark, 
-its Frontend and Backends too.
-It aims Q.E.D.
+# Ada-based Rust
+
+Ada-based Rust is a deterministic Rust execution foundation with an Ada/SPARK
+proof boundary. The project is being built around a small set of explicit
+invariants:
+
+- normal control flow returns `Result`; recoverable failures do not panic;
+- the core does not read the wall clock, spawn implicit work, or depend on
+	unordered iteration;
+- failures have stable numeric codes and are written synchronously to a log;
+- shutdown is explicit and reports whether the log was durably synchronized;
+- the SPARK package specifies the bounded error and shutdown contract that the
+	Rust implementation must satisfy.
+
+The runtime foundation is paired with a Rust-native backend core. It is
+deliberately small so that each compiler boundary can be verified before a
+frontend, optimizer, and machine-code emitter are added.
+
+## Requirements
+
+- Rust 1.78 or newer
+- Alire and a GNAT/SPARK toolchain for the proof package
+
+The current machine has Rust and Alire, but `gnatprove` and `gprbuild` are not
+currently on `PATH`. Rust tests therefore run independently of SPARK proof
+analysis until the GNAT/SPARK toolchain is installed.
+
+Provision the Ada/SPARK tools through Alire with:
+
+```text
+./scripts/setup-spark.sh
+```
+
+The setup declares GNATprove 16.1.0 and SPARK libraries 16.1.0 in
+`alire.toml`. Verification can then run in the Alire environment with:
+
+```text
+alr exec -- ./scripts/verify-spark.sh
+```
+
+## Run
+
+```text
+cargo test
+cargo run -- --log-path target/ada-based-rust.log
+./scripts/bootstrap.sh
+./scripts/bootstrap-cargo.sh
+./scripts/bootstrap-pure-rust.sh
+./scripts/verify-spark.sh
+./scripts/setup-spark.sh
+./scripts/verify-formal.sh
+./scripts/verify-rust-formal.sh
+./scripts/verify-llvm.sh
+./scripts/verify-rust-native.sh
+./scripts/verify-rust-native-pipeline.sh
+```
+
+The command exits with a nonzero status only when the runtime cannot complete
+its requested operation or cannot synchronize its log. Application failures
+are represented as structured errors and are not converted into panics.
+
+Validate generated text against the installed LLVM-compatible frontend:
+
+```text
+./scripts/verify-llvm.sh
+```
+
+This uses `clang -x ir` to parse and compile the emitted IR. It is a
+compatibility check against LLVM IR syntax, not proof that the Rust backend
+implements all LLVM semantics.
+
+For the complete description of the implemented compiler behavior, supported
+grammar, APIs, verification tools, bootstrap modes, and current limitations,
+see [MANUAL.md](MANUAL.md).
+
+## Bootstrap
+
+`scripts/bootstrap.sh` is the initial self-bootstrap pipeline. Stage 0 tests
+and builds the source with the host Rust toolchain. Stage 1 rebuilds the same
+source in an isolated target directory and executes that resulting binary and
+its Rust formal checker. This proves the runtime and its bounded proof tool can
+reproduce their own build pipeline; a genuinely self-hosting Ada/SPARK compiler
+frontend and backend will be added later.
+
+## Formal verification
+
+The Ada/SPARK contract is built by
+`spark/ada_based_runtime_verification.gpr` and proved by `scripts/verify-spark.sh` at
+proof level 2. The proof checks the bounded sequence increment and lifecycle
+transitions, including the precondition that prevents sequence overflow.
+
+Bootstrap runs formal verification automatically when `gnatprove` and
+`gprbuild` are available. To require the proof tools, use:
+
+```text
+VERIFY_SPARK=required ./scripts/bootstrap.sh
+```
+
+Without the tools, the script reports that formal verification was skipped;
+it never claims that the SPARK proof succeeded.
+
+## Multi-prover verification
+
+The repository includes reference models for Coq, Lean, and Isabelle/HOL with
+Sledgehammer in `proofs/`. Run all installed provers with:
+
+```text
+./scripts/verify-formal.sh
+```
+
+The orchestrator never claims success for a prover that is unavailable. To
+make missing tools a hard failure, use:
+
+```text
+FORMAL_VERIFICATION=required ./scripts/verify-formal.sh
+```
+
+These are reference-model proofs of deterministic arithmetic properties, not
+yet refinement proofs of the Rust implementation. The refinement boundary is
+the next formal-methods milestone.
+
+## Rust formal checker
+
+`src/formal.rs` contains a dependency-free executable proof kernel for the
+current expression subset. It evaluates and normalizes add/subtract/multiply
+trees with checked `i64` arithmetic, then rejects normalization counterexamples.
+Run it with:
+
+```text
+./scripts/verify-rust-formal.sh
+```
+
+This bounded checker is part of the Rust implementation and complements, but
+does not replace, general theorem provers such as Coq, Lean, Isabelle, and
+Sledgehammer.
+
+Verify an individual expression with:
+
+```text
+cargo run --bin rust-formal-check -- --expr "2 + 3 * (5 - 1)"
+```
+
+## Pure-Rust bootstrap
+
+`scripts/bootstrap-pure-rust.sh` does not use Cargo, LLVM bindings, or an
+external Rust library. It uses the installed `rustc` only as the unavoidable
+stage-0 seed, compiles the library and executable directly, rebuilds both in a
+second isolated stage, and executes stage 1. Removing the seed `rustc` entirely
+would require implementing a complete Rust compiler and standard library before
+this project could compile itself from source.
+
+## Cargo and crates.io
+
+The Rust package is intentionally dependency-free and can be built using only
+Cargo and the Rust standard library. `scripts/bootstrap-cargo.sh` performs a
+locked two-stage Cargo build. The manifest includes crates.io metadata so the
+package can be checked with:
+
+```text
+cargo package --allow-dirty --no-verify
+```
+
+`cargo package` creates a distributable source archive; publishing requires a
+crates.io account and should only happen after the SPARK proof environment and
+compatibility tests are available. crates.io distributes the Rust crate, but
+does not replace the host `rustc` seed needed for bootstrapping.
+
+## Layout
+
+- `src/backend.rs`: verified deterministic SSA-like IR and LLVM-like text emitter
+- `src/frontend.rs`: dependency-free integer-expression frontend to backend IR
+- `src/error.rs`: stable error codes and explicit error values
+- `src/log.rs`: ordered, synchronous, durable error logging
+- `src/runtime.rs`: deterministic operation and explicit shutdown lifecycle
+- `spark/`: Ada/SPARK contract for the Rust-facing runtime boundary
+- `spark/ada_based_ir.ads`: bounded Ada/SPARK LLVM-like IR contract
+
+## Rust-native LLVM replacement
+
+`src/backend.rs` is the first slice of the LLVM replacement. It owns a small
+SSA-like intermediate representation, verifies definitions and operands before
+emission, and emits stable LLVM-like text without linking to LLVM. It now also
+performs deterministic basic constant folding. The complete staged rewrite is
+tracked in [LLVM_REWRITE_PLAN.md](LLVM_REWRITE_PLAN.md); this repository does
+not yet claim to implement all of LLVM.
+
+The frontend currently accepts integer expressions with `+`, `-`, `*`, and
+parentheses, such as `2 + 3 * (5 - 1)`. It lowers them to verified IR and
+reports malformed input through `Result` without panicking.
+
+## Determinism boundary
+
+The core emits an increasing sequence number for each log record. It does not
+generate timestamps, use randomness, or rely on concurrency. The filesystem
+is an external effect and is isolated behind the logger; failures from that
+effect are returned as `Result` values. A process terminated by `SIGKILL` or a
+power loss cannot guarantee a final shutdown record, but every successfully
+accepted error is flushed and synchronized immediately.
 
 
